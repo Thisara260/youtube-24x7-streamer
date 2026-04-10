@@ -1,17 +1,22 @@
 FROM node:18-slim
 
+# Install ffmpeg
 RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-RUN useradd -m appuser
+# Create user with UID 10001 (IMPORTANT)
+RUN useradd -u 10001 -m appuser
 
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install
 
 COPY . .
-RUN chown -R appuser:appuser /app
 
-USER appuser
+# Give permission
+RUN chown -R 10001:10001 /app
+
+# Use numeric user (REQUIRED by Choreo)
+USER 10001
 
 CMD ["node", "index.js"]
